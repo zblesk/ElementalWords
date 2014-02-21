@@ -1,7 +1,7 @@
 using System.Globalization;
 
-using (var stream = new StreamReader("sk_SK.dic"))
-using (var output = new StreamWriter("outdict.txt"))
+using (var stream = new StreamReader("en_US.dic"))
+using (var output = new StreamWriter("outdict_en_US.txt"))
 {
 	while (!stream.EndOfStream)
 	{

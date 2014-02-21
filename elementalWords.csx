@@ -11,6 +11,11 @@ var elements = new List<string> {"h", "he", "li", "be", "b", "c", "n", "o", "f",
 	"eu", "gd", "tb", "dy", "ho", "er", "tm", "yb", "ac", "th", "pa", "u", "np", "pu", "am", "cm", "bk",
 	"cf", "es", "fm", "md", "no" };
 
+static string FormatElement(string el)
+{
+	return Char.ToUpper(el[0]) + el.Substring(1);
+}
+
 private static string RemoveDiacritics(string text)
 {
     var normalizedString = text.Normalize(NormalizationForm.FormD);
@@ -61,7 +66,19 @@ class QueueItem
 	{
 		return Elements.Aggregate(
 				"",
-				(acc, nxt) => acc + Char.ToUpper(nxt[0]) + nxt.Substring(1));
+				(acc, nxt) => acc + FormatElement(nxt));
+	}
+
+	public void AddElementCounts(Dictionary<string, int> counts)
+	{
+		foreach (var element in Elements)
+		{
+		    if (!counts.ContainsKey(element))
+		    {
+		    	counts[element] = 0;
+		    }
+		    counts[element]++;
+		}
 	}
 
 	public override string ToString()
@@ -97,22 +114,57 @@ IEnumerable<QueueItem> FindAllEncodings(string normalWord)
 	}
 }
 
-using (var stream = new StreamReader("outdict.txt"))
+const int max_count = 40;
+
+using (var stream = new StreamReader("outdict_sk_SK.txt"))
 {
 	var converted = 0;
+	var longestLen = 0;
+	var longestWords = new List<string>();
+	var mostVariationsCount = 0;
+	var mostVariedWords = new List<string>();
+	var counts = new int[max_count];
 	var unconverted = 0;
+	var elementCounts = new Dictionary<string, int>();
 	while (!stream.EndOfStream)
 	{
 		var word = stream.ReadLine().Trim().ToLower();
 		var encodings =  FindAllEncodings(RemoveDiacritics(word)).ToList();
+
+		if (encodings.Count > mostVariationsCount)
+		{
+			mostVariationsCount = encodings.Count;
+			mostVariedWords = new List<string>();
+		}
+		if (encodings.Count == mostVariationsCount)
+		{
+			mostVariedWords.Add(word);
+		}
+		counts[encodings.Count]++;
+
 		if (encodings.Any())
 		{
-			Console.WriteLine(
-				"{0} - {1}",
-				word,
-				string.Join(
-                    ", ",
-                    encodings.Select(e => e.GetElements())));
+			if (word.Length > longestLen)
+			{
+				longestLen = word.Length;
+				longestWords = new List<string>();
+			}
+			if (word.Length == longestLen)
+			{
+				longestWords.Add(word);
+			}
+
+			foreach (var enc in encodings)
+			{
+			    enc.AddElementCounts(elementCounts);
+			}
+
+			// Console.WriteLine(
+			// 	"{0} - {1}",
+			// 	word,
+			// 	string.Join(
+   //                  ", ",
+   //                  encodings.Select(e => e.GetElements())));
 			converted++;
 		}
 		else
@@ -121,4 +173,24 @@ using (var stream = new StreamReader("outdict.txt"))
 		}
 	}
 	Console.WriteLine("\nConverted: {0}\nUnconverted: {1}", converted, unconverted);
+	Console.WriteLine("\nLongest: {0} - {1}", longestLen, longestWords.Aggregate("", (a, w) => a + '\n' + w ));
+	Console.WriteLine("\nMost variations: {0} - {1}", mostVariationsCount, mostVariedWords.Aggregate("", (a, w) => a + '\n' + w ));
+	Console.WriteLine("Counts:");
+	for (int i = 0; i < max_count; i++)
+	{
+	    if (counts[i] > 0)
+	    {
+	    	Console.WriteLine("{0} variations \t{1} times.", i, counts[i]);
+	    }
+	}
+	Console.WriteLine();
+	var elementCountList = elementCounts.ToList();
+	elementCountList.Sort((firstPair, nextPair) =>
+    {
+        return firstPair.Value.CompareTo(nextPair.Value) * -1;
+    });
+	foreach (var kvp in elementCountList)
+	{
+	    Console.WriteLine("{0}\t{1}", FormatElement(kvp.Key), kvp.Value);
+	}
 }
