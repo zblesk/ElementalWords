@@ -16,7 +16,7 @@ static string FormatElement(string el)
 	return Char.ToUpper(el[0]) + el.Substring(1);
 }
 
-private static string RemoveDiacritics(string text)
+static string RemoveDiacritics(string text)
 {
     var normalizedString = text.Normalize(NormalizationForm.FormD);
     var stringBuilder = new StringBuilder();
@@ -116,7 +116,7 @@ IEnumerable<QueueItem> FindAllEncodings(string normalWord)
 
 const int max_count = 40;
 
-using (var stream = new StreamReader("outdict_sk_SK.txt"))
+using (var stream = new StreamReader("outdict_en_US.txt"))
 {
 	var converted = 0;
 	var longestLen = 0;
@@ -159,12 +159,12 @@ using (var stream = new StreamReader("outdict_sk_SK.txt"))
 			    enc.AddElementCounts(elementCounts);
 			}
 
-			// Console.WriteLine(
-			// 	"{0} - {1}",
-			// 	word,
-			// 	string.Join(
-   //                  ", ",
-   //                  encodings.Select(e => e.GetElements())));
+			Console.WriteLine(
+				"{0} - {1}",
+				word,
+				string.Join(
+                    ", ",
+                    encodings.Select(e => e.GetElements())));
 			converted++;
 		}
 		else
@@ -172,9 +172,18 @@ using (var stream = new StreamReader("outdict_sk_SK.txt"))
 			unconverted++;
 		}
 	}
-	Console.WriteLine("\nConverted: {0}\nUnconverted: {1}", converted, unconverted);
-	Console.WriteLine("\nLongest: {0} - {1}", longestLen, longestWords.Aggregate("", (a, w) => a + '\n' + w ));
-	Console.WriteLine("\nMost variations: {0} - {1}", mostVariationsCount, mostVariedWords.Aggregate("", (a, w) => a + '\n' + w ));
+	Console.WriteLine(
+		"\nConverted: {0}\nUnconverted: {1}",
+		converted,
+		unconverted);
+	Console.WriteLine(
+		"\nLongest: {0} - {1}",
+		longestLen,
+		longestWords.Aggregate("", (a, w) => a + '\n' + w ));
+	Console.WriteLine("\nMost variations: {0} - {1}",
+		mostVariationsCount,
+		mostVariedWords.Aggregate("", (a, w) => a + '\n' + w ));
+
 	Console.WriteLine("Counts:");
 	for (int i = 0; i < max_count; i++)
 	{
@@ -184,6 +193,7 @@ using (var stream = new StreamReader("outdict_sk_SK.txt"))
 	    }
 	}
 	Console.WriteLine();
+
 	var elementCountList = elementCounts.ToList();
 	elementCountList.Sort((firstPair, nextPair) =>
     {
