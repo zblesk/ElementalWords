@@ -18,6 +18,7 @@ static string FormatElement(string el)
 
 static string RemoveDiacritics(string text)
 {
+	// "Inspired" by some StackOverflow posts
     var normalizedString = text.Normalize(NormalizationForm.FormD);
     var stringBuilder = new StringBuilder();
 
@@ -116,7 +117,7 @@ IEnumerable<QueueItem> FindAllEncodings(string normalWord)
 
 const int max_count = 40;
 
-using (var stream = new StreamReader("outdict_en_US.txt"))
+using (var stream = new StreamReader("Dovahkiin.txt"))
 {
 	var converted = 0;
 	var longestLen = 0;
